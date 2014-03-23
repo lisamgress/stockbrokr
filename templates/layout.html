@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>stockbrokr</title>
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename="css/style.css") }}" />
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename="css/bootstrap.css") }}" />
+</head>
+<body>
+	<header>
+		<div>
+			<h1>stockbrokr</h1>
+		</div>
+	</header>
+
+	<div>
+		{% block content %}
+		{% endblock %}
+	</div>
+
+</body>
+</html>
