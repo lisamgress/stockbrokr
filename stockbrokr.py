@@ -1,5 +1,5 @@
 import os
-import bcrypt
+from passlib.hash import pbkdf2_sha512
 from flask import Flask, render_template, request, session, flash, redirect, url_for
 from flask.ext.sqlalchemy import SQLAlchemy
 
@@ -24,7 +24,7 @@ class User(db.Model):
 
 	def __init__(self, email, password):
 		self.email = email
-		self.password = bcrypt.hashpw(password, bcrypt.gensalt())
+		self.password = pbkdf2_sha512.encrypt(password)
 
 class Stock(db.Model):
 	owner_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), primary_key=True)
@@ -45,7 +45,7 @@ def login():
 		if user:
 			password_entered = request.form['password'].encode('UTF8')
 			password_stored = user.password.encode('UTF8')
-			if bcrypt.hashpw(password_entered, password_stored) == password_stored:
+			if pbkdf2_sha512.verify(password_entered, password_stored):
 				session['logged_in'] = user.user_id
 				flash("You were logged in")
 				return redirect(url_for('index'))

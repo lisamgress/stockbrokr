@@ -4,10 +4,8 @@ Jinja2==2.7.2
 MarkupSafe==0.19
 SQLAlchemy==0.9.3
 Werkzeug==0.9.4
-bcrypt==1.0.2
-cffi==0.8.2
 gunicorn==18.0
 itsdangerous==0.23
+passlib==1.6.2
 psycopg2==2.5.2
-pycparser==2.10
 wsgiref==0.1.2
