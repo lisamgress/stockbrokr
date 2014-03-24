@@ -1,13 +1,15 @@
+import os
 from flask import Flask, render_template, request, session, flash, redirect, url_for
 from flask.ext.sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.config.from_object(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://stockbrokr@localhost/stockbrokr'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ["DATABASE_URL"]
 db = SQLAlchemy(app)
 
 app.config.update(dict(
     SECRET_KEY='development key',
+    DEBUG=True
 ))
 
 class User(db.Model):
