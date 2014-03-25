@@ -1,3 +1,9 @@
 body {
 	padding-top: 70px;
 }
+
+.logo {
+	height: 35px;
+	width: 35px;
+	display: inline;
+}
