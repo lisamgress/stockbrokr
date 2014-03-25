@@ -1,38 +1,38 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-	<div class="container">
-		<h2>Portfolio</h2>
-		<div>
-			<h4>brokr bucks balance: ${{ user.balance | currency }}<h4>
-		</div>
+    <div class="container">
+        <h2>Portfolio</h2>
+        <div>
+            <h4>brokr bucks balance: ${{ user.balance | currency }}<h4>
+        </div>
 
-		{% if user.portfolio: %}
+        {% if user.portfolio %}
 
-		<table class="table table-hover">
-			<tr class="active">
-				<th>Stock name</th>
-				<th>Symbol</th>
-				<th>Shares</th>
-				<th>Purchase price</th>
-				<th>Current price</th>
-				<th>Current Value</th>
-			</tr>
-			{% for stock in user.portfolio: %}
-			<tr>
-				<th>-</th>
-				<th>{{ stock.symbol }}</th>
-				<th>{{ stock.shares }}</th>
-				<th>{{ stock.purchase_price | currency }}</th>
-				<th> {{ stock.current_price | currency }} </th>
-				<th> {{ (stock.shares * stock.current_price) | currency }}</th>
-			</tr>
-			{% endfor %}
-		</table>
+        <table class="table table-hover">
+            <tr class="active">
+                <th>Stock name</th>
+                <th>Symbol</th>
+                <th>Shares</th>
+                <th>Purchase price</th>
+                <th>Current price</th>
+                <th>Current Value</th>
+            </tr>
+            {% for stock in user.portfolio %}
+            <tr>
+                <th>-</th>
+                <th>{{ stock.symbol }}</th>
+                <th>{{ stock.shares }}</th>
+                <th>{{ stock.purchase_price | currency }}</th>
+                <th>{{ stock.current_price | currency }} </th>
+                <th>{{ (stock.shares * stock.current_price) | currency }}</th>
+            </tr>
+            {% endfor %}
+        </table>
 
-		{% else %}
-			<p>Your portfolio is empty.  Buy some stocks!</p>
-		{% endif %}
-	</div>
+        {% else %}
+            <p>Your portfolio is empty.  Buy some stocks!</p>
+        {% endif %}
+    </div>
 
 {% endblock %}
