@@ -27,16 +27,25 @@ class User(db.Model):
 		self.password = pbkdf2_sha512.encrypt(password)
 		self.first_name = first_name
 		self.last_name = last_name
-		self.balance = 10000
+		self.balance = 1000000		# in cents
 
 class Stock(db.Model):
 	owner_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), primary_key=True)
-	abbr = db.Column(db.String(10), primary_key=True)
-	num_shares = db.Column(db.Integer)
+	symbol = db.Column(db.String(10), primary_key=True)
+	shares = db.Column(db.Integer)
+	purchase_price = db.Column(db.Integer) 	# in cents
+	current_price = db.Column(db.Integer)	# in cents
+
+	def __init__(self, owner_id, symbol, shares, purchase_price):
+		self.owner_id = owner_id
+		self.symbol = symbol
+		self.shares = shares
+		self.purchase_price = purchase_price
+		self.current_price = purchase_price
 
 @app.template_filter('currency')
 def format_currency(amount):
-	return '{:20,.2f}'.format(amount)
+	return '{:20,.2f}'.format(amount / 100)
 
 @app.route('/')
 def index():
