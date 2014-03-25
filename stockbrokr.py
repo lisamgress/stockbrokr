@@ -34,6 +34,9 @@ class Stock(db.Model):
 	abbr = db.Column(db.String(10), primary_key=True)
 	num_shares = db.Column(db.Integer)
 
+@app.template_filter('currency')
+def format_currency(amount):
+	return '{:20,.2f}'.format(amount)
 
 @app.route('/')
 def index():
@@ -87,6 +90,11 @@ def register():
 				flash(new_user.first_name + ", thanks for registering")
 				return redirect(url_for('index'))
 	return render_template('register.html', error=error)
+
+@app.route('/portfolio')
+def portfolio():
+	user = User.query.get(session['logged_in'])
+	return render_template('portfolio.html', user=user)
 
 
 if __name__== '__main__':

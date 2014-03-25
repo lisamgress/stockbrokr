@@ -1,0 +1,23 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+	<div class="container">
+		<h2>Portfolio</h2>
+		<div>
+			<h4>brokr bucks balance: ${{ user.balance | currency }}<h4>
+		</div>
+
+		<table class="table table-hover">
+			<tr>
+				<th>Stock name</th>
+				<th>Symbol</th>
+				<th>Shares</th>
+				<th>Current price</th>
+				<th>Total Value</th>
+			</tr>
+		</table>
+	</div>
+
+
+
+{% endblock %}
