@@ -5,7 +5,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.config.from_object(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ["DATABASE_URL"]
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", "postgresql://stockbrokr@localhost/stockbrokr")
 db = SQLAlchemy(app)
 
 app.config.update(dict(
@@ -22,9 +22,12 @@ class User(db.Model):
 	balance = db.Column(db.Integer)
 	portfolio = db.relationship('Stock', backref='owner')
 
-	def __init__(self, email, password):
+	def __init__(self, email, password, first_name, last_name):
 		self.email = email
 		self.password = pbkdf2_sha512.encrypt(password)
+		self.first_name = first_name
+		self.last_name = last_name
+		self.balance = 10000
 
 class Stock(db.Model):
 	owner_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), primary_key=True)
@@ -47,12 +50,13 @@ def login():
 			password_stored = user.password.encode('UTF8')
 			if pbkdf2_sha512.verify(password_entered, password_stored):
 				session['logged_in'] = user.user_id
-				flash("You were logged in")
+				flash(user.first_name + ", you were logged in")
 				return redirect(url_for('index'))
 			else:
 				error = 'Invalid password'
 		else:
 			error = "Email not found.  Please create an account"
+			return render_template('register.html', error=error)
 	return render_template('login.html', error=error)
 
 
@@ -61,6 +65,28 @@ def logout():
 	session.pop('logged_in', None)
 	flash('You were logged out')
 	return redirect(url_for('login'))
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+	error = None
+	if request.method == 'POST':
+		user = User.query.filter_by(email=request.form['email']).first()
+		if user:
+			error = "That email address is already associated with an account"
+		else:
+			if request.form['password'] != request.form['confirm_password']:
+				error = "Confirmed password must match password"
+			else:
+				new_user = User(request.form['email'],
+								request.form['password'],
+								request.form['f_name'],
+								request.form['l_name'])
+				db.session.add(new_user)
+				db.session.commit()
+				session['logged_in'] = new_user.user_id
+				flash(new_user.first_name + ", thanks for registering")
+				return redirect(url_for('index'))
+	return render_template('register.html', error=error)
 
 
 if __name__== '__main__':
