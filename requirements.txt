@@ -8,4 +8,5 @@ gunicorn==18.0
 itsdangerous==0.23
 passlib==1.6.2
 psycopg2==2.5.2
+requests==2.2.1
 wsgiref==0.1.2
