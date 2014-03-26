@@ -20,7 +20,7 @@ class User(db.Model):
     password = db.Column(db.String(255))
     first_name = db.Column(db.String(50))
     last_name = db.Column(db.String(80))
-    balance = db.Column(db.Integer)
+    balance = db.Column(db.Numeric)
     portfolio = db.relationship('Stock', backref='owner')
 
     def __init__(self, email, password, first_name, last_name):
@@ -28,14 +28,14 @@ class User(db.Model):
         self.password = pbkdf2_sha512.encrypt(password)
         self.first_name = first_name
         self.last_name = last_name
-        self.balance = 1000000      # in cents
+        self.balance = 10000.00
 
 class Stock(db.Model):
     owner_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), primary_key=True)
     symbol = db.Column(db.String(10), primary_key=True)
     shares = db.Column(db.Integer)
-    purchase_price = db.Column(db.Integer)  # in cents
-    current_price = db.Column(db.Integer)   # in cents
+    purchase_price = db.Column(db.Numeric)
+    current_price = db.Column(db.Numeric)
 
     def __init__(self, owner_id, symbol, shares, purchase_price):
         self.owner_id = owner_id
@@ -46,7 +46,7 @@ class Stock(db.Model):
 
 @app.template_filter('currency')
 def format_currency(amount):
-    return '{:20,.2f}'.format(amount / 100)
+    return '{:20,.2f}'.format(amount)
 
 def get_first_row(data):
     first_row = None
@@ -127,13 +127,13 @@ def buy_stock():
         row = get_first_row(data)
         stock_info = {
             'symbol' : row[0],
-            'current' : row[1],
+            'current' : float(row[1]),
             'last_updated_day' : row[2],
             'last_updated_time' : row[3],
             'change' : row[4],
-            'open' : row[5],
-            'daily_high' : row[6],
-            'daily_low' : row[7],
+            'open' : float(row[5]),
+            'daily_high' : float(row[6]),
+            'daily_low' : float(row[7]),
             'volume' : row[8]
             }
 
