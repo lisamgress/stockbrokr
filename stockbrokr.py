@@ -1,4 +1,4 @@
-import os, requests, csv
+import os, requests, csv, decimal
 from StringIO import StringIO
 from passlib.hash import pbkdf2_sha512
 from flask import Flask, render_template, request, session, flash, redirect, url_for
@@ -153,9 +153,10 @@ def buy_stock():
         purchase_price = request.form['current'].encode('UTF8')
         new_stock = Stock(user.user_id, symbol, shares, purchase_price)
         db.session.add(new_stock)
+        user.balance -= (int(shares) * decimal.Decimal(purchase_price))
         db.session.commit()
         flash("You purchased %s share(s) of %s." % (shares, symbol))
-    return render_template('portfolio.html', user=user)
+    return redirect(url_for('portfolio'))
 
 
 
