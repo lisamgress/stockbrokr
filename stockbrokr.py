@@ -1,4 +1,5 @@
-import os
+import os, requests, csv
+from StringIO import StringIO
 from passlib.hash import pbkdf2_sha512
 from flask import Flask, render_template, request, session, flash, redirect, url_for
 from flask.ext.sqlalchemy import SQLAlchemy
@@ -46,6 +47,14 @@ class Stock(db.Model):
 @app.template_filter('currency')
 def format_currency(amount):
     return '{:20,.2f}'.format(amount / 100)
+
+def get_first_row(data):
+    first_row = None
+    for row in data:
+        first_row = row
+        break
+    return first_row
+
 
 @app.route('/')
 def index():
@@ -104,6 +113,31 @@ def register():
 def portfolio():
     user = User.query.get(session['logged_in'])
     return render_template('portfolio.html', user=user)
+
+@app.route('/buy_stock', methods=['GET', 'POST'])
+def buy_stock():
+    data = None
+    stock_info = {}
+    user = User.query.get(session['logged_in'])
+    if request.method == 'POST':
+        symbol = request.form['stock_symbol']
+        url = 'http://download.finance.yahoo.com/d/quotes.csv?s=%s&f=sl1d1t1c1ohgv&e=.csv' % (symbol)
+        r = requests.get(url)
+        data = csv.reader(StringIO(r.text))
+        row = get_first_row(data)
+        stock_info = {
+            'symbol' : row[0],
+            'current' : row[1],
+            'last_updated_day' : row[2],
+            'last_updated_time' : row[3],
+            'change' : row[4],
+            'open' : row[5],
+            'daily_high' : row[6],
+            'daily_low' : row[7],
+            'volume' : row[8]
+            }
+
+    return render_template('buy.html', stock_info=stock_info, user=user)
 
 
 if __name__== '__main__':

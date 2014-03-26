@@ -1,0 +1,76 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+	<div class="container">
+		<h2>Buy stocks</h2>
+		<!-- look up ticker symbol -->
+		<form action="{{ url_for('buy_stock') }}" role="form" method="POST">
+			<div class="form-group">
+				<input type="text" class="form-control" name="stock_symbol" placeholder="stock symbol">
+			</div>
+
+			<div class="form-group">
+             	<button type="submit" class="btn btn-default">look up</button>
+             </div>
+		</form>
+
+
+
+		{% if stock_info %}
+		<div class="row">
+			<!-- results of search for ticker symbol -->
+			<div class="col-sm-6">
+				As of</strong> {{ stock_info['last_updated_day'] }} at {{ stock_info['last_updated_time']}}
+				<table class="table table-bordered">
+					<tr>
+						<th>Ticker symbol</th>
+						<td>{{ stock_info['symbol'] }}</td>
+					</tr>
+					<tr>
+						<th>Current</th>
+						<td>{{ stock_info['current'] }}</td>
+					</tr>
+					<tr>
+						<th>Gains/Losses</th>
+						<td>{{ stock_info['change'] }}</td>
+					</tr>
+					<tr>
+						<th>Day's Range</th>
+						<td>{{ stock_info['daily_low'] }} - {{ stock_info['daily_high'] }}</td>
+					</tr>
+					<tr>
+						<th>Open</th>
+						<td>{{ stock_info['open'] }}</td>
+					</tr>
+					<tr>
+						<th>Volume</th>
+						<td>{{ stock_info['volume'] }}</td>
+					</tr>
+				</table>
+			</div>
+
+			<!-- info to buy stock -->
+			<div class="col-sm-6">
+				<div>
+					Your brokr bucks balance: ${{ user.balance | currency }}
+				</div>
+				<div>
+					How many shares do you want to buy?
+				</div>
+				<form action="{{ url_for('buy_stock') }}" role="form" method="POST">
+					<div class="form-group">
+						<input type="text" class="form-control" name="num_shares" placeholder="shares">
+					</div>
+
+					<div class="form-group">
+             			<button type="submit" class="btn btn-default">buy</button>
+             		</div>
+				</form>
+			</div>
+		</div>
+		{% endif %}
+
+	</div>
+
+{% endblock %}

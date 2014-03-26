@@ -31,7 +31,7 @@
         </table>
 
         {% else %}
-            <p>Your portfolio is empty.  Buy some stocks!</p>
+            <p>Your portfolio is empty.  Go <a href="{{ url_for('buy_stock') }}">buy</a> some stocks!</p>
         {% endif %}
     </div>
 
