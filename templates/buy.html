@@ -5,7 +5,7 @@
 	<div class="container">
 		<h2>Buy stocks</h2>
 		<!-- look up ticker symbol -->
-		<form action="{{ url_for('buy_stock') }}" role="form" method="POST">
+		<form action="{{ url_for('lookup_stock') }}" role="form" method="POST">
 			<div class="form-group">
 				<input type="text" class="form-control" name="stock_symbol" placeholder="stock symbol">
 			</div>
@@ -21,7 +21,7 @@
 		<div class="row">
 			<!-- results of search for ticker symbol -->
 			<div class="col-sm-6">
-				As of</strong> {{ stock_info['last_updated_day'] }} at {{ stock_info['last_updated_time']}}
+				As of</strong> {{ stock_info['last_updated_day'] }} at {{ stock_info['last_updated_time']}} (Eastern)
 				<table class="table table-bordered">
 					<tr>
 						<th>Ticker symbol</th>
@@ -29,19 +29,19 @@
 					</tr>
 					<tr>
 						<th>Current</th>
-						<td>{{ stock_info['current'] }}</td>
+						<td>{{ stock_info['current'] | currency }}</td>
 					</tr>
 					<tr>
 						<th>Gains/Losses</th>
-						<td>{{ stock_info['change'] }}</td>
+						<td>{{ stock_info['change'] | currency }}</td>
 					</tr>
 					<tr>
 						<th>Day's Range</th>
-						<td>{{ stock_info['daily_low'] }} - {{ stock_info['daily_high'] }}</td>
+						<td>{{ stock_info['daily_low']| currency }} - {{ stock_info['daily_high'] | currency }}</td>
 					</tr>
 					<tr>
 						<th>Open</th>
-						<td>{{ stock_info['open'] }}</td>
+						<td>{{ stock_info['open'] | currency }}</td>
 					</tr>
 					<tr>
 						<th>Volume</th>
@@ -59,8 +59,23 @@
 					How many shares do you want to buy?
 				</div>
 				<form action="{{ url_for('buy_stock') }}" role="form" method="POST">
-					<div class="form-group">
-						<input type="text" class="form-control" name="num_shares" placeholder="shares">
+					<div class="row">
+						<div class="form-group col-sm-3">
+							<input type="text" id="shares" class="form-control" name="shares" placeholder="shares">
+						</div>
+						<input type="hidden" name="symbol" value="{{ stock_info['symbol'] }}">
+						<input type="hidden" name="current" value="{{ stock_info['current'] }}">
+						<div class="col-sm-1">
+							X
+						</div>
+						<div class="col-sm-4" id="current">
+							{{ stock_info['current'] }}
+						</div>
+						<div class="col-sm-1">
+							=
+						</div>
+						<div class="col-sm-3" id="total">
+						</div>
 					</div>
 
 					<div class="form-group">
@@ -69,7 +84,7 @@
 				</form>
 			</div>
 		</div>
-		{% endif %}
+		{% endif %} 
 
 	</div>
 

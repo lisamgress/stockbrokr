@@ -20,6 +20,7 @@
                         {% if not session.logged_in %}
                             <li><a href="{{ url_for('login') }}">log in</a></li>
                         {% else %}
+                            <li><a href="{{ url_for('lookup_stock') }}">lookup stock</a></li>
                             <li><a href="{{ url_for('portfolio') }}">portfolio</a></li>
                             <li><a href="{{ url_for('logout') }} ">log out</a></li>
                         {% endif %}
@@ -37,6 +38,8 @@
     {% block content %}
     {% endblock %}
 
-
+<script src="{{ url_for('static', filename='js/jquery-2.1.0.js') }}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

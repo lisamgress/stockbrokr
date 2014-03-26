@@ -44,6 +44,8 @@ class Stock(db.Model):
         self.purchase_price = purchase_price
         self.current_price = purchase_price
 
+
+
 @app.template_filter('currency')
 def format_currency(amount):
     return '{:20,.2f}'.format(amount)
@@ -55,11 +57,14 @@ def get_first_row(data):
         break
     return first_row
 
+def get_current_user():
+    return User.query.get(session['logged_in'])
+
+
 
 @app.route('/')
 def index():
     return render_template('index.html')
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -79,7 +84,6 @@ def login():
             error = "Email not found.  Please create an account"
             return render_template('register.html', error=error)
     return render_template('login.html', error=error)
-
 
 @app.route('/logout')
 def logout():
@@ -111,33 +115,48 @@ def register():
 
 @app.route('/portfolio')
 def portfolio():
-    user = User.query.get(session['logged_in'])
+    user = get_current_user()
     return render_template('portfolio.html', user=user)
 
-@app.route('/buy_stock', methods=['GET', 'POST'])
-def buy_stock():
+@app.route('/lookup_stock', methods=['GET', 'POST'])
+def lookup_stock():
     data = None
     stock_info = {}
-    user = User.query.get(session['logged_in'])
+    user = get_current_user()
     if request.method == 'POST':
         symbol = request.form['stock_symbol']
         url = 'http://download.finance.yahoo.com/d/quotes.csv?s=%s&f=sl1d1t1c1ohgv&e=.csv' % (symbol)
         r = requests.get(url)
         data = csv.reader(StringIO(r.text))
         row = get_first_row(data)
+
         stock_info = {
             'symbol' : row[0],
             'current' : float(row[1]),
             'last_updated_day' : row[2],
             'last_updated_time' : row[3],
-            'change' : row[4],
+            'change' : float(row[4]),
             'open' : float(row[5]),
             'daily_high' : float(row[6]),
             'daily_low' : float(row[7]),
             'volume' : row[8]
             }
-
     return render_template('buy.html', stock_info=stock_info, user=user)
+
+
+@app.route('/buy_stock', methods=['GET', 'POST'])
+def buy_stock():
+    user = get_current_user()
+    if request.method == 'POST':
+        symbol = request.form['symbol'].encode('UTF8')
+        shares = request.form['shares'].encode('UTF8')
+        purchase_price = request.form['current'].encode('UTF8')
+        new_stock = Stock(user.user_id, symbol, shares, purchase_price)
+        db.session.add(new_stock)
+        db.session.commit()
+        flash("You purchased %s share(s) of %s." % (shares, symbol))
+    return render_template('portfolio.html', user=user)
+
 
 
 if __name__== '__main__':
