@@ -28,8 +28,6 @@
                 <td>{{ stock.purchase_price | currency }}</td>
                 <td>{{ stock.current_price | currency }} </td>
                 <td>{{ (stock.shares * stock.current_price) | currency }}</td>
-<!--                 <td><button type="submit" class="btn btn-link">Buy</button></td>
-                <td><button type="submit" class="btn btn-link">Sell</button></td> -->
                 <td><a href="#">Buy</a></td>
                 <td><a href="#">Sell</a></td>
             </tr>
@@ -39,6 +37,7 @@
         {% else %}
             <p>Your portfolio is empty.  Go <a href="{{ url_for('lookup_stock') }}">buy</a> some stocks!</p>
         {% endif %}
+
     </div>
 
 {% endblock %}

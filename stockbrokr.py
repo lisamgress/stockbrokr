@@ -58,8 +58,9 @@ def get_first_row(data):
     return first_row
 
 def get_current_user():
+    if 'logged_in' not in session:
+        return None
     return User.query.get(session['logged_in'])
-
 
 
 @app.route('/')
@@ -116,6 +117,9 @@ def register():
 @app.route('/portfolio')
 def portfolio():
     user = get_current_user()
+    if not user:
+        flash("You must log in to view your portfolio")
+        return redirect(url_for('login'))
     return render_template('portfolio.html', user=user)
 
 @app.route('/lookup_stock', methods=['GET', 'POST'])
@@ -123,13 +127,15 @@ def lookup_stock():
     data = None
     stock_info = {}
     user = get_current_user()
+    if not user:
+        flash("You must log in to look up stocks")
+        return redirect(url_for('login'))
     if request.method == 'POST':
-        symbol = request.form['stock_symbol']
+        symbol = request.form['symbol']
         url = 'http://download.finance.yahoo.com/d/quotes.csv?s=%s&f=sl1d1t1c1ohgv&e=.csv' % (symbol)
         r = requests.get(url)
         data = csv.reader(StringIO(r.text))
         row = get_first_row(data)
-
         stock_info = {
             'symbol' : row[0],
             'current' : float(row[1]),
@@ -147,16 +153,28 @@ def lookup_stock():
 @app.route('/buy_stock', methods=['GET', 'POST'])
 def buy_stock():
     user = get_current_user()
+    if not user:
+        flash("You must log in to buy shares")
+        return redirect(url_for('login'))
     if request.method == 'POST':
         symbol = request.form['symbol']
+        already_own = Stock.query.filter_by(owner_id=user.user_id, symbol=symbol).first()
+        if already_own:
+            flash("You already own that stock")
+            return redirect(url_for('portfolio'))
         shares = request.form['shares']
-        purchase_price = request.form['current']
-        new_stock = Stock(user.user_id, symbol, shares, purchase_price)
-        db.session.add(new_stock)
-        user.balance -= (int(shares) * decimal.Decimal(purchase_price))
-        db.session.commit()
-        flash("You purchased %s share(s) of %s." % (shares, symbol))
-    return redirect(url_for('portfolio'))
+        share_purchase_price = request.form['current']
+        total_purchase_price = int(shares) * decimal.Decimal(share_purchase_price)
+        if total_purchase_price <= user.balance:
+            new_stock = Stock(user.user_id, symbol, shares, share_purchase_price)
+            db.session.add(new_stock)
+            user.balance -= total_purchase_price
+            db.session.commit()
+            flash("You purchased %s share(s) of %s." % (shares, symbol))
+            return redirect(url_for('portfolio'))
+        else:
+            flash("You don't have enough BrokrBucks to buy that many shares")
+    return redirect(url_for('lookup_stock'))
 
 
 
