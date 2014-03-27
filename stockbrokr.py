@@ -148,9 +148,9 @@ def lookup_stock():
 def buy_stock():
     user = get_current_user()
     if request.method == 'POST':
-        symbol = request.form['symbol'].encode('UTF8')
-        shares = request.form['shares'].encode('UTF8')
-        purchase_price = request.form['current'].encode('UTF8')
+        symbol = request.form['symbol']
+        shares = request.form['shares']
+        purchase_price = request.form['current']
         new_stock = Stock(user.user_id, symbol, shares, purchase_price)
         db.session.add(new_stock)
         user.balance -= (int(shares) * decimal.Decimal(purchase_price))
