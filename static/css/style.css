@@ -15,5 +15,10 @@ body {
 
 .jumbotron {
 	text-align: center;
-/*	background-color: #33CCCC;*/
+}
+
+/* */
+
+td {
+	text-align: center;
 }

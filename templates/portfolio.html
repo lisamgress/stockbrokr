@@ -16,7 +16,8 @@
                 <th>Shares</th>
                 <th>Purchase price</th>
                 <th>Current price</th>
-                <th>Current Value</th>
+                <th>Gains / Losses</th>
+                <th>Current total value</th>
                 <th></th>
                 <th></th>
             </tr>
@@ -27,9 +28,10 @@
                 <td>{{ stock.shares }}</td>
                 <td>{{ stock.purchase_price | currency }}</td>
                 <td>{{ stock.current_price | currency }} </td>
+                <td>{{ (stock.current_price - stock.purchase_price) | currency }}</td>
                 <td>{{ (stock.shares * stock.current_price) | currency }}</td>
                 <td><a href="#">Buy</a></td>
-                <td><a href="#">Sell</a></td>
+                <td><a href="{{ url_for('sell_stock', symbol=stock.symbol) }}">Sell</a></td>
             </tr>
             {% endfor %}
         </table>

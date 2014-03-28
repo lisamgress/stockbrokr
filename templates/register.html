@@ -4,9 +4,7 @@
 
     <div class="container">
         <h2>Register</h2>
-        {% if error %} 
-            <div class="alert alert-danger"><strong>Error:</strong> {{ error }} </div>
-        {% endif %}
+
         <form action="{{ url_for('register') }}" method="post"  class="form-horizontal" role="form">
             <div class="form-group">
                 <label for="f_name" class="col-sm-2 control-label">First name</label>

@@ -1,0 +1,26 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+    <div class="container">
+        <h2>Sell stock</h2>
+
+        {% if stock_info %}
+            <p>You currently have {{ stock_info.shares }} shares of {{ stock_info.symbol }}.</p>
+            <p>You can sell your shares for {{ stock_info.current_price }} per share.</p>
+            <p>How many would you like to sell?</p>
+            <form action="{{ url_for('process_sale', symbol=stock_info.symbol) }}" role="form" method="POST">
+                <div class="form-group col-sm-3">
+                    <input type="text" id="shares" class="form-control" name="shares" placeholder="shares">
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Sell</button>
+                </div>
+            </form>
+
+        {% else %}
+            <p>Select a stock that you want to sell from your <a href="{{ url_for('portfolio') }}">portfolio.</a> </p>
+        {% endif %}
+    </div>
+
+{% endblock %}
