@@ -17,8 +17,8 @@ body {
 	text-align: center;
 }
 
-/* */
+/* Portfolio */
 
-td {
+.portfolio-table th, .portfolio-table td {
 	text-align: center;
 }
