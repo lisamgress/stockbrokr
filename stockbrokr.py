@@ -213,7 +213,11 @@ def process_sale(symbol):
             flash("You don't have that many shares to sell.", 'alert-danger')
             return redirect(url_for('sell_stock', symbol=symbol))
         user.balance += shares_for_sale * stock_info.current_price
-        stock_info.shares -= shares_for_sale
+        remaining_shares = stock_info.shares - shares_for_sale
+        if remaining_shares == 0:
+            db.session.delete(stock_info)
+        else:
+            stock_info.shares -= shares_for_sale
         db.session.commit()
         flash("You sold %s share(s) of %s" % (shares_for_sale, symbol), 'alert-success')
     return redirect(url_for('portfolio'))
