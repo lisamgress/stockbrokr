@@ -188,6 +188,16 @@ def buy_stock():
             flash("You already own that stock", 'alert-info')
             return redirect(url_for('portfolio'))
         shares = request.form['shares']
+
+        if not shares.isdigit():
+            flash("Please enter a whole number greater than zero", 'alert-warning')
+            return redirect(url_for('buy_stock', symbol=symbol))
+        shares = int(shares)
+
+        # change this so that the page does not reload after check
+        if shares <= 0:
+            flash("Please enter a whole number greater than zero", 'alert-warning')
+            return redirect(url_for('buy_stock', symbol=symbol))
         share_purchase_price = request.form['current']
         total_purchase_price = int(shares) * decimal.Decimal(share_purchase_price)
         if total_purchase_price <= current_user.balance:
@@ -214,10 +224,21 @@ def sell_stock(symbol):
 def process_sale(symbol):
     if request.method == 'POST':
         stock_info = Stock.query.filter_by(owner_id=current_user.user_id, symbol=symbol).first()
-        shares_for_sale = int(request.form['shares'])
+        shares_for_sale = request.form['shares']
+
+        if not shares_for_sale.isdigit():
+            flash("Please enter a whole number greater than zero", 'alert-warning')
+            return redirect(url_for('sell_stock', symbol=symbol))
+
+        shares_for_sale = int(shares_for_sale)
+        if shares_for_sale <= 0:
+            flash("Please enter a whole number between 1 and %s" % (stock_info.shares), 'alert-warning')
+            return redirect(url_for('sell_stock', symbol=symbol))
+
         if shares_for_sale > stock_info.shares:
             flash("You don't have that many shares to sell.", 'alert-danger')
             return redirect(url_for('sell_stock', symbol=symbol))
+
         current_user.balance += shares_for_sale * stock_info.current_price
         remaining_shares = stock_info.shares - shares_for_sale
         if remaining_shares == 0:
