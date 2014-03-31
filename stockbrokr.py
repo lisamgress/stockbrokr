@@ -141,7 +141,7 @@ def portfolio():
 
 @app.route('/lookup_stock', methods=['GET', 'POST'])
 def lookup_stock():
-    data = None
+    # data = None
     stock_info = {}
     user = get_current_user()
     if not user:
@@ -149,6 +149,12 @@ def lookup_stock():
         return redirect(url_for('login'))
     if request.method == 'POST':
         row = get_stock_info(request.form['symbol'])
+
+        # check if ticker symbol is valid.  
+        if 'N/A' in row:
+            flash("%s is not a valid ticker symbol." %(row[0]), 'alert-warning')
+            return redirect(url_for('lookup_stock'))
+
         stock_info = {
             'symbol' : row[0],
             'current' : float(row[1]),
