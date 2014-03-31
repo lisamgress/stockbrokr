@@ -6,7 +6,7 @@
         <div class="jumbotron">
             <h1>Welcome to Stockbrokr</h1>
             <h2>Get ready to buy and sell!!</h2>
-            {% if not session.logged_in %}
+            {% if not current_user.is_authenticated() %}
                 <p>Register for a free Stockbrokr account and receive $10,000 free BrokrBucks.</p>
                 <p><a class="btn btn-primary btn-lg" href="{{ url_for('register') }}">Register</a></p>
             {% else %}

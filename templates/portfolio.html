@@ -4,10 +4,10 @@
     <div class="container">
         <h2>Portfolio</h2>
         <div>
-            <h4>BrokrBucks balance: ${{ user.balance | currency }}<h4>
+            <h4>BrokrBucks balance: ${{ current_user.balance | currency }}<h4>
         </div>
 
-        {% if user.portfolio %}
+        {% if current_user.portfolio %}
 
         <table class="table portfolio-table">
             <tr class="active">
@@ -21,7 +21,7 @@
                 <th></th>
                 <th></th>
             </tr>
-            {% for stock in user.portfolio %}
+            {% for stock in current_user.portfolio %}
             <tr>
                 <td>-</td>
                 <td>{{ stock.symbol }}</td>
