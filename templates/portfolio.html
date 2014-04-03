@@ -1,7 +1,6 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-    <div class="container">
         <h2>Portfolio</h2>
         <div>
             <h4>BrokrBucks balance: ${{ current_user.balance | currency }}<h4>
@@ -39,7 +38,4 @@
         {% else %}
             <p>Your portfolio is empty.  Go <a href="{{ url_for('lookup_stock') }}">buy</a> some stocks!</p>
         {% endif %}
-
-    </div>
-
 {% endblock %}

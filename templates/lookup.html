@@ -2,8 +2,7 @@
 
 {% block content %}
 
-	<div class="container">
-		<h2>Lookup stocks</h2>
+		<h2>Look up stocks</h2>
 		<form action="{{ url_for('lookup_stock') }}" role="form" method="POST">
 			{{ form.hidden_tag() }}
 			<div class="form-group">
@@ -54,5 +53,4 @@
 		</a>
 
 		{% endif %}
-	</div>
 {% endblock %}

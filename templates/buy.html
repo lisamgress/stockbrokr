@@ -2,7 +2,6 @@
 
 {% block content %}
 
-    <div class="container">
         <h2>Buy shares</h2>
         <div>
             Your brokr bucks balance: ${{ current_user.balance | currency }}
@@ -36,6 +35,5 @@
                 {{ form.submit(class="btn btn-primary") }}
             </div>
         </form>
-    </div>
 
 {% endblock %}

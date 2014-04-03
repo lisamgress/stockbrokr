@@ -2,7 +2,6 @@
 
 {% block content %}
 
-    <div class="container">
         <h2>Sell shares</h2>
 
         {% if stock_info %}
@@ -25,6 +24,4 @@
         {% else %}
             <p>Select a stock that you want to sell from your <a href="{{ url_for('portfolio') }}">portfolio.</a> </p>
         {% endif %}
-    </div>
-
 {% endblock %}
