@@ -1,0 +1,58 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+	<div class="container">
+		<h2>Lookup stocks</h2>
+		<form action="{{ url_for('lookup_stock') }}" role="form" method="POST">
+			{{ form.hidden_tag() }}
+			<div class="form-group">
+				{{ form.symbol(class="form-control", placeholder="ticker symbol") }}
+				{% for error in form.errors.symbol %}
+				<span class="error-mssg">{{ error }}</span>
+				{% endfor %}
+			</div>
+			<div class="form-group">
+				{{ form.submit(class="btn btn-primary") }}
+			</div>
+		</form>
+
+		<!-- results of search for ticker symbol -->
+		{% if stock_info %}
+		<div>
+			As of</strong> {{ stock_info['last_updated_day'] }} at {{ stock_info['last_updated_time']}} (Eastern)
+			<table class="table table-bordered">
+				<tr>
+					<th>Ticker symbol</th>
+					<td>{{ stock_info['symbol'] }}</td>
+				</tr>
+				<tr>
+					<th>Current</th>
+					<td>{{ stock_info['current'] | currency }}</td>
+				</tr>
+				<tr>
+					<th>Gains/Losses</th>
+					<td>{{ stock_info['change'] | currency }}</td>
+				</tr>
+				<tr>
+					<th>Day's Range</th>
+					<td>{{ stock_info['daily_low']| currency }} - {{ stock_info['daily_high'] | currency }}</td>
+				</tr>
+				<tr>
+					<th>Open</th>
+					<td>{{ stock_info['open'] | currency }}</td>
+				</tr>
+				<tr>
+					<th>Volume</th>
+					<td>{{ stock_info['volume'] }}</td>
+				</tr>
+			</table>
+		</div>
+
+		<a href="{{ url_for('buy_stock', symbol=stock_info['symbol']) }}" class="btn btn-info .btn-lg">
+			I'd like to buy shares
+		</a>
+
+		{% endif %}
+	</div>
+{% endblock %}

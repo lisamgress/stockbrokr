@@ -22,3 +22,8 @@ body {
 .portfolio-table th, .portfolio-table td {
 	text-align: center;
 }
+
+/* */
+.error-mssg {
+	color: red;
+}

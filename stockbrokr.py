@@ -4,6 +4,7 @@ from passlib.hash import pbkdf2_sha512
 from flask import Flask, render_template, request, session, flash, redirect, url_for
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.login import LoginManager, login_user, logout_user, login_required, current_user
+from forms import LoginForm, SellSharesForm, RegistrationForm, LookupStockForm, BuySharesForm
 
 STOCK_API_URL = 'http://download.finance.yahoo.com/d/quotes.csv?s=%s&f=sl1d1t1c1ohgv&e=.csv'
 STARTING_BALANCE = 10000.00
@@ -24,7 +25,7 @@ app.config.update(dict(
 
 class User(db.Model):
     user_id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(150), unique=True)
+    email = db.Column(db.String(255), unique=True)
     password = db.Column(db.String(255))
     first_name = db.Column(db.String(50))
     last_name = db.Column(db.String(80))
@@ -37,6 +38,9 @@ class User(db.Model):
         self.first_name = first_name
         self.last_name = last_name
         self.balance = STARTING_BALANCE
+
+    def verify_password(self, entered_password):
+        return pbkdf2_sha512.verify(entered_password, self.password)
 
     def is_authenticated(self):
         return True
@@ -93,24 +97,19 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
-        user = User.query.filter_by(email=request.form['email']).first()
-        if user:
-            password_entered = request.form['password'].encode('UTF8')
-            password_stored = user.password.encode('UTF8')
-            if pbkdf2_sha512.verify(password_entered, password_stored):
-                login_user(user)
-                flash("%s, you were logged in" % (user.first_name), 'alert-success')
-                
-                # look into why this is not redirecting to next
-                return redirect(request.args.get("next") or url_for("index"))
-            else:
-                flash("Invalid password", 'alert-danger')
-                return redirect(url_for('login'))
-        else:
-            flash("Email not found.  Please create an account", 'alert-warning')
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if not user:
+            flash('No user found with that email address.  Please register.', 'alert-info')
             return redirect(url_for('register'))
-    return render_template('login.html')
+        if not user.verify_password(form.password.data):
+            flash('Invalid email or password', 'alert-warning')
+            return redirect(url_for('login'))
+        login_user(user)
+        flash("user logged in", 'alert-success')
+        return redirect(request.args.get("next") or url_for("index")) # why isn't 'next' working?
+    return render_template('login.html', form=form)
 
 @app.route('/logout')
 @login_required
@@ -121,26 +120,20 @@ def logout():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    if request.method == 'POST':
+    form = RegistrationForm()
+    if form.validate_on_submit():
         user = User.query.filter_by(email=request.form['email']).first()
         if user:
             flash("That email address is already associated with an account. Please log in.", 'alert-warning')
             return redirect(url_for('login'))
-        else:
-            if request.form['password'] != request.form['confirm_password']:
-                flash("Confirmed password must match password", 'alert-danger')
-                return redirect(url_for('register'))
-            else:
-                new_user = User(request.form['email'],
-                                request.form['password'],
-                                request.form['f_name'],
-                                request.form['l_name'])
-                db.session.add(new_user)
-                db.session.commit()
-                login_user(new_user)
-                flash("%s, thanks for registering" % (new_user.first_name ), 'alert-success')
-                return redirect(url_for('index'))
-    return render_template('register.html')
+        new_user = User(form.email.data, form.password.data, form.first_name.data, form.last_name.data)
+        db.session.add(new_user)
+        db.session.commit()
+        login_user(new_user)
+        flash('%s, thanks for registering!' %(new_user.first_name), 'alert-success')
+        return redirect(url_for('index'))
+
+    return render_template('register.html', form=form)
 
 @app.route('/portfolio')
 @login_required
@@ -155,9 +148,10 @@ def portfolio():
 @app.route('/lookup_stock', methods=['GET', 'POST'])
 @login_required
 def lookup_stock():
+    form = LookupStockForm()
     stock_info = {}
-    if request.method == 'POST':
-        row = get_stock_info(request.form['symbol'])
+    if form.validate_on_submit():
+        row = get_stock_info(form.symbol.data)
 
         # check if ticker symbol is valid.  
         if 'N/A' in row:
@@ -175,33 +169,25 @@ def lookup_stock():
             'daily_low' : float(row[7]),
             'volume' : row[8]
             }
-    return render_template('buy.html', stock_info=stock_info)
+    return render_template('lookup.html', stock_info=stock_info, form=form)
 
 
-@app.route('/buy_stock', methods=['GET', 'POST'])
+@app.route('/buy_stock/<symbol>', methods=['GET', 'POST'])
 @login_required
-def buy_stock():
-    if request.method == 'POST':        
-        symbol = request.form['symbol']
+def buy_stock(symbol):
+    form = BuySharesForm()
+    row = get_stock_info(symbol)
+    current_price = decimal.Decimal(row[1])
+    if form.validate_on_submit():        
         already_own = Stock.query.filter_by(owner_id=current_user.user_id, symbol=symbol).first()
         if already_own:
             flash("You already own that stock", 'alert-info')
             return redirect(url_for('portfolio'))
-        shares = request.form['shares']
+        shares = form.shares.data
 
-        if not shares.isdigit():
-            flash("Please enter a whole number greater than zero", 'alert-warning')
-            return redirect(url_for('buy_stock', symbol=symbol))
-        shares = int(shares)
-
-        # change this so that the page does not reload after check
-        if shares <= 0:
-            flash("Please enter a whole number greater than zero", 'alert-warning')
-            return redirect(url_for('buy_stock', symbol=symbol))
-        share_purchase_price = request.form['current']
-        total_purchase_price = int(shares) * decimal.Decimal(share_purchase_price)
+        total_purchase_price = shares * current_price
         if total_purchase_price <= current_user.balance:
-            new_stock = Stock(current_user.user_id, symbol, shares, share_purchase_price)
+            new_stock = Stock(current_user.user_id, symbol, shares, current_price)
             db.session.add(new_stock)
             current_user.balance -= total_purchase_price
             db.session.add(current_user)
@@ -210,33 +196,17 @@ def buy_stock():
             return redirect(url_for('portfolio'))
         else:
             flash("You don't have enough BrokrBucks to buy that many shares", 'alert-warning')
-    return redirect(url_for('lookup_stock'))
+    return render_template('buy.html', current_price=current_price, symbol=symbol, form=form)
 
-@app.route('/sell_stock/<symbol>')
+@app.route('/sell_stock/<symbol>', methods=['GET', 'POST'])
 @login_required
 def sell_stock(symbol):
+    form = SellSharesForm()
     stock_info = Stock.query.filter_by(owner_id=current_user.user_id, symbol=symbol).first()
-    return render_template('sell.html', stock_info=stock_info)
-
-
-@app.route('/process_sale/<symbol>', methods=['GET', 'POST'])
-@login_required
-def process_sale(symbol):
-    if request.method == 'POST':
-        stock_info = Stock.query.filter_by(owner_id=current_user.user_id, symbol=symbol).first()
-        shares_for_sale = request.form['shares']
-
-        if not shares_for_sale.isdigit():
-            flash("Please enter a whole number greater than zero", 'alert-warning')
-            return redirect(url_for('sell_stock', symbol=symbol))
-
-        shares_for_sale = int(shares_for_sale)
-        if shares_for_sale <= 0:
-            flash("Please enter a whole number between 1 and %s" % (stock_info.shares), 'alert-warning')
-            return redirect(url_for('sell_stock', symbol=symbol))
-
+    if form.validate_on_submit():
+        shares_for_sale = form.shares.data
         if shares_for_sale > stock_info.shares:
-            flash("You don't have that many shares to sell.", 'alert-danger')
+            flash("You don't have that many shares to sell.", 'alert-warning')
             return redirect(url_for('sell_stock', symbol=symbol))
 
         current_user.balance += shares_for_sale * stock_info.current_price
@@ -249,7 +219,8 @@ def process_sale(symbol):
         db.session.add(current_user)
         db.session.commit()
         flash("You sold %s share(s) of %s" % (shares_for_sale, symbol), 'alert-success')
-    return redirect(url_for('portfolio'))
+        return redirect(url_for('portfolio'))
+    return render_template('sell.html', stock_info=stock_info, form=form)
 
 
 

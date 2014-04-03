@@ -3,18 +3,22 @@
 {% block content %}
 
     <div class="container">
-        <h2>Sell stock</h2>
+        <h2>Sell shares</h2>
 
         {% if stock_info %}
             <p>You currently have {{ stock_info.shares }} shares of {{ stock_info.symbol }}.</p>
             <p>You can sell your shares for {{ stock_info.current_price }} per share.</p>
             <p>How many would you like to sell?</p>
-            <form action="{{ url_for('process_sale', symbol=stock_info.symbol) }}" role="form" method="POST">
+            <form action="{{ url_for('sell_stock', symbol=stock_info.symbol) }}" role="form" method="POST">
+                {{ form.hidden_tag() }}
                 <div class="form-group col-sm-3">
-                    <input type="text" id="shares" class="form-control" name="shares" placeholder="shares">
+                    {{ form.shares(class="form-control", placeholder="shares") }}
+                    {% for error in form.errors.shares %}
+                        <span class="error-mssg">{{ error }}</span>
+                    {% endfor %}
                 </div>
                 <div class="form-group">
-                    <button type="submit" class="btn btn-primary">Sell</button>
+                    {{ form.submit(class="btn btn-primary") }}
                 </div>
             </form>
 
